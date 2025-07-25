@@ -1,0 +1,76 @@
+
+## 1. **JWT là gì?**
+
+**JWT (JSON Web Token)** là một chuẩn mã hóa JSON để truyền thông tin an toàn giữa các bên dưới dạng **token** (chuỗi mã hóa). Token này thường được sử dụng để xác thực và phân quyền trong các ứng dụng web hiện đại.
+
+**Điểm mạnh của JWT:**
+
+* **Tính nhỏ gọn**: Token được mã hóa dưới dạng chuỗi, dễ dàng truyền qua HTTP Header, URL hoặc localStorage.
+* **Không trạng thái (Stateless)**: Máy chủ không cần lưu session, giúp giảm tải và phù hợp với các hệ thống phân tán.
+* **Tính an toàn**: Payload có thể được **ký bằng thuật toán** như HMAC hoặc RSA, đảm bảo tính toàn vẹn và xác thực nguồn gốc.
+* **Dễ sử dụng và phổ biến**: Hỗ trợ tốt trong các framework/language hiện đại như Node.js, Java, .NET, v.v.
+
+**Điểm yếu của JWT:**
+
+* **Không thể thu hồi dễ dàng**: Một khi JWT được phát hành, không thể thu hồi hoặc hủy bỏ nếu không có hệ thống quản lý token riêng.
+* **Dễ bị tấn công nếu lưu trữ không an toàn** (ví dụ: lưu trong localStorage có thể bị XSS).
+* **Token dài** hơn so với session ID thông thường, có thể ảnh hưởng đến hiệu suất truyền tải.
+* **Không mã hóa mặc định**: Dữ liệu trong Payload có thể bị đọc nếu không được mã hóa riêng (chỉ được **ký**, không được **mã hóa**).
+
+## 2. **Phân tích cấu trúc chuỗi JWT**
+
+Một chuỗi JWT thường có **3 phần**, được phân tách bởi dấu chấm (`.`):
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.
+eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkxhbiBBbmgiLCJpYXQiOjE1MTYyMzkwMjJ9.
+SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+
+#### 1. **Header**:
+
+{
+  "alg": "HS256",
+  "typ": "JWT"
+}
+
+* `alg`: Thuật toán dùng để ký (ví dụ: HMAC SHA256).
+* `typ`: Kiểu token (mặc định là "JWT").
+
+Sau đó được **Base64Url encode** thành:
+
+eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9
+
+#### 2. **Payload**:
+
+{
+  "sub": "1234567890",
+  "name": "Lan Anh",
+  "iat": 1516239022
+}
+
+* Chứa **dữ liệu người dùng** hoặc **các claim tiêu chuẩn** như:
+
+  * `iss` (Issuer): Ai phát hành token
+  * `sub` (Subject): Đối tượng được xác thực
+  * `aud` (Audience): Đối tượng nhận token
+  * `exp` (Expiration): Hạn sử dụng
+  * `iat` (Issued At): Thời điểm phát hành
+
+Mã hóa thành:
+eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkxhbiBBbmgiLCJpYXQiOjE1MTYyMzkwMjJ9
+#### 3. **Signature**:
+HMACSHA256(
+  base64UrlEncode(header) + "." + base64UrlEncode(payload),
+  secret_key
+)
+
+Giúp xác minh token chưa bị thay đổi và được phát hành từ đúng nguồn. Ví dụ:
+SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c
+
+## 3. **Các trường hợp sử dụng phổ biến của JWT**
+
+| Trường hợp sử dụng                   | Mô tả                                                                                                           |
+| ------------------------------------ | --------------------------------------------------------------------------------------------------------------- |
+| **Xác thực (Authentication)**        | Sau khi đăng nhập thành công, máy chủ tạo JWT gửi về client. Client dùng JWT để xác thực các request tiếp theo. |
+| **Phân quyền (Authorization)**       | JWT có thể chứa role, permission của người dùng, giúp kiểm soát truy cập tài nguyên.                            |
+| **Giao tiếp giữa các microservices** | Các dịch vụ nội bộ có thể sử dụng JWT để xác thực yêu cầu giữa các thành phần.                                  |
+| **Trao đổi thông tin an toàn**       | JWT có thể dùng để truyền dữ liệu ngắn hạn, được ký và xác minh nguồn gốc.                                      |
